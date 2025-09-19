@@ -168,17 +168,12 @@ function App() {
 
       {activeTab==="Eigenschaften" && (
         <div>
-          {ATTRS.map(a=>(
+          {ATTRS.map(a=> (
             <div key={a}>
               {a}: <input type="number" value={characters[currentChar].attributes[a]||0} onChange={e=>updateAttr(a,e.target.value)} style={{width:60}} />
               <button onClick={()=>rollAttributeDice(a)}>Würfeln</button>
             </div>
           ))}
-          <h4>Letzter Würfelwurf:</h4>
-          <div className="dice-row">
-            {diceResults.map((d,i)=><div key={i} className="dice-wrapper">{d}</div>)}
-            {diceResults.length===0 && <div>Keine Würfe bisher</div>}
-          </div>
         </div>
       )}
 
@@ -191,7 +186,7 @@ function App() {
             )}
           </select>
 
-          {displayedSkills.map((skill,idx)=>(
+          {displayedSkills.map((skill,idx)=> (
             <div key={idx} style={{marginTop:"8px"}}>
               <strong>{skill.name}</strong> [{skill.attr.join("/")}] 
               TaW: <input type="number" value={skill.value} style={{width:50}}
@@ -217,12 +212,6 @@ function App() {
             Kategorie: <input type="text" value={newSkillCategory} onChange={e=>setNewSkillCategory(e.target.value)} />
             Eigenschaften (Komma): <input type="text" value={newSkillAttr} onChange={e=>setNewSkillAttr(e.target.value)} />
             <button onClick={addNewSkill}>Hinzufügen</button>
-          </div>
-
-          <h4>Letzter Würfelwurf:</h4>
-          <div className="dice-row">
-            {diceResults.map((d,i)=><div key={i} className="dice-wrapper">{d}</div>)}
-            {diceResults.length===0 && <div>Keine Würfe bisher</div>}
           </div>
         </div>
       )}

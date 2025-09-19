@@ -23,6 +23,11 @@ h4 { margin-bottom:4px; margin-top:12px; }
 </style>
 </head>
 <body>
+
+<script type="module">
+import { exportCharacters, importCharacters } from './storage.js';
+</script>
+
 <div id="root"></div>
 <script type="text/babel">
 
@@ -141,34 +146,6 @@ function App() {
     });
   }
 
-  function exportAll(){
-    const blob = new Blob([JSON.stringify(characters,null,2)],{type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download="dsa_characters.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function importJSON(e){
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try{
-        const data = JSON.parse(ev.target.result);
-        setCharacters(data);
-        const first = Object.keys(data)[0];
-        setCurrentChar(first);
-        setSkills(first?data[first].skills:[]);
-        saveChars(data);
-        alert("Import erfolgreich!");
-      } catch(err){ alert("Ungültige JSON"); }
-    };
-    reader.readAsText(file);
-  }
-
   if(!currentChar) return <div><button onClick={newCharacter}>Neuer Charakter</button></div>;
 
   const groupedSkills = {};
@@ -255,8 +232,16 @@ function App() {
       )}
 
       <h3>Import / Export</h3>
-      <button onClick={exportAll}>Exportieren</button>
-      <input type="file" accept="application/json" onChange={importJSON} />
+      <button onClick={()=>exportCharacters(characters)}>Exportieren</button>
+      <input type="file" accept="application/json" onChange={e=>{
+        importCharacters(e.target.files[0], data=>{
+          setCharacters(data);
+          const first = Object.keys(data)[0];
+          setCurrentChar(first);
+          setSkills(first?data[first].skills:[]);
+          localStorage.setItem("dsa_characters", JSON.stringify(data));
+        });
+      }} />
     </div>
   );
 }

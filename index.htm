@@ -44,6 +44,11 @@ function App() {
   const [activeTab, setActiveTab] = useState("Eigenschaften");
   const [filterCategory, setFilterCategory] = useState("Alle");
 
+  // New skill input states
+  const [newSkillName, setNewSkillName] = useState("");
+  const [newSkillCategory, setNewSkillCategory] = useState("");
+  const [newSkillAttr, setNewSkillAttr] = useState("");
+
   useEffect(()=>{
     fetch("talent.json")
       .then(res => res.json())
@@ -116,6 +121,32 @@ function App() {
       result: result.critical || (result.success ? `✅ Erfolg (≤ ${val})` : `❌ Misslungen (≤ ${val})`),
       details: result.details
     });
+  }
+
+  function addNewSkill(){
+    if(!newSkillName || !newSkillAttr){
+      alert("Name und Eigenschaften müssen angegeben werden!");
+      return;
+    }
+    const attrArray = newSkillAttr.split(",").map(a=>a.trim());
+    const newSkill = {
+      name: newSkillName,
+      category: newSkillCategory || "Allgemein",
+      attr: attrArray,
+      value: 0
+    };
+    const updatedSkills = [...skills, newSkill];
+    setSkills(updatedSkills);
+
+    // Save to current character
+    const updatedChars = {...characters};
+    updatedChars[currentChar].skills = updatedSkills;
+    setCharacters(updatedChars);
+    localStorage.setItem("dsa_characters", JSON.stringify(updatedChars));
+
+    setNewSkillName("");
+    setNewSkillCategory("");
+    setNewSkillAttr("");
   }
 
   if(!currentChar) return <div><button onClick={newCharacter}>Neuer Charakter</button></div>;
@@ -193,6 +224,14 @@ function App() {
               </div>
             </div>
           ))}
+
+          <h4>Neues Talent hinzufügen</h4>
+          <div>
+            Name: <input type="text" value={newSkillName} onChange={e=>setNewSkillName(e.target.value)} />
+            Kategorie: <input type="text" value={newSkillCategory} onChange={e=>setNewSkillCategory(e.target.value)} />
+            Eigenschaften (Komma): <input type="text" value={newSkillAttr} onChange={e=>setNewSkillAttr(e.target.value)} />
+            <button onClick={addNewSkill}>Hinzufügen</button>
+          </div>
 
           <h4>Letzter Würfelwurf:</h4>
           <div className="dice-row">

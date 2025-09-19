@@ -5,6 +5,7 @@
 <title>DSA4 Charakterbogen</title>
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 body { font-family:sans-serif; margin:20px; }
 input, button, select { margin:6px; }
@@ -25,7 +26,7 @@ h4 { margin-bottom:4px; margin-top:12px; }
 
 <div id="root"></div>
 
-<script type="module">
+<script type="text/babel">
 
 import { rollD20, processSkillRoll, rollAttribute } from './dice.js';
 import { exportCharacters, importCharacters } from './storage.js';
@@ -148,7 +149,7 @@ function App() {
     setNewSkillAttr("");
   }
 
-  if(!currentChar) return '<div><button onClick={newCharacter}>Neuer Charakter</button></div>';
+  if(!currentChar) return <div><button onClick={newCharacter}>Neuer Charakter</button></div>;
 
   const groupedSkills = {};
   skills.forEach(skill => { const cat = skill.category || "Allgemein"; if(!groupedSkills[cat]) groupedSkills[cat]=[]; groupedSkills[cat].push(skill); });

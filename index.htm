@@ -1,22 +1,23 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<title>DSA Charakterbogen — Talente nach Kategorie</title>
+<meta charset="UTF-8">
+<title>DSA4 Charakterbogen</title>
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 body { font-family:sans-serif; margin:20px; }
 input, button { margin:6px; }
-.log { margin-top:20px; padding:10px; border:1px solid #ccc; max-height:200px; overflow-y:auto; background:#f9f9f9; }
+.tabs { display:flex; margin-bottom:12px; }
+.tab { padding:6px 12px; margin-right:6px; border:1px solid #ccc; border-radius:4px; cursor:pointer; }
+.tab.active { background:#eee; font-weight:bold; }
+.log { margin-top: 20px; padding:10px; border:1px solid #ccc; max-height:250px; overflow-y:auto; background:#f9f9f9; }
 .log-entry { border-bottom:1px solid #ddd; padding:6px 0; }
-.dice-row { display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; }
-.dice-wrapper { width:40px; height:40px; font-size:24px; display:flex; justify-content:center; align-items:center; border:1px solid #ccc; border-radius:6px; background:#f6f6f6; }
 .controls { margin-top:8px; }
 h4 { margin-bottom:4px; margin-top:12px; }
-.modal { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); display:flex; justify-content:center; align-items:center; z-index:2000; }
-.modal-content { background:white; padding:16px; border-radius:8px; width:320px; max-width:90%; }
+.dice-row { display:flex; gap:8px; margin-top:8px; }
+.dice-wrapper { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border:1px solid #ccc; border-radius:6px; background:#f6f6f6; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -25,78 +26,76 @@ h4 { margin-bottom:4px; margin-top:12px; }
 
 const { useState, useEffect } = React;
 const ATTRS = ["MU","KL","IN","CH","FF","GE","KO","KK"];
+const singleRollCategories = ["Kampftalente","Sprachen und Schriften","Liturgiekenntnis"];
+const defaultSkills = {
+  "Kampftalente":[{name:"Schwerter",attr:["GE","KK"],value:10,spec:"Einhand",category:"Kampftalente"}],
+  "Körperliche Talente":[{name:"Klettern",attr:["KK","GE"],value:10,spec:"",category:"Körperliche Talente"}],
+  "Gesellschaftliche Talente":[{name:"Überreden",attr:["CH","IN"],value:12,spec:"",category:"Gesellschaftliche Talente"}],
+  "Natur-Talente":[{name:"Orientierung",attr:["IN","FF"],value:10,spec:"",category:"Natur-Talente"}],
+  "Wissenstalente":[{name:"Geschichtswissen",attr:["IN"],value:10,spec:"",category:"Wissenstalente"}],
+  "Sprachen und Schriften":[{name:"Götter/Kulte",attr:["KL"],value:10,spec:"",category:"Sprachen und Schriften"}],
+  "Handwerkstalente":[{name:"Schneidern",attr:["GE"],value:10,spec:"",category:"Handwerkstalente"}]
+};
 
 function App(){
   const [characters,setCharacters]=useState({});
   const [currentChar,setCurrentChar]=useState(null);
   const [skills,setSkills]=useState([]);
-  const [manualMode,setManualMode]=useState(false);
   const [log,setLog]=useState([]);
   const [diceResults,setDiceResults]=useState([]);
-  const [manualModalVisible,setManualModalVisible]=useState(false);
-  const [manualSkill,setManualSkill]=useState(null);
-  const [manualUseSpec,setManualUseSpec]=useState(false);
-  const [manualRolls,setManualRolls]=useState(["","",""]);
+  const [activeTab,setActiveTab]=useState("Eigenschaften");
 
   useEffect(()=>{
     const saved=localStorage.getItem("dsa_characters");
-    if(saved){ const parsed=JSON.parse(saved); setCharacters(parsed); const first=Object.keys(parsed)[0]; if(first){ setCurrentChar(first); setSkills(parsed[first].skills||[]); } }
+    if(saved){ const parsed=JSON.parse(saved); setCharacters(parsed); const first=Object.keys(parsed)[0]; if(first){ setCurrentChar(first); setSkills(parsed[first].skills||[]); } } 
+    else setSkills(Object.values(defaultSkills).flat());
   },[]);
 
   function saveChars(newChars){ setCharacters(newChars); localStorage.setItem("dsa_characters",JSON.stringify(newChars)); }
-  function newCharacter(){ const name=prompt("Neuer Charaktername:"); if(!name)return; if(characters[name]){alert("Name existiert bereits!"); return;} const attrs={}; ATTRS.forEach(a=>attrs[a]=12); const newChars={...characters,[name]:{attributes:attrs,skills:[]}}; setCurrentChar(name); setSkills([]); saveChars(newChars); }
-  function deleteCharacter(){ if(!currentChar)return; if(!confirm(`Charakter "${currentChar}" wirklich löschen?`))return; const newChars={...characters}; delete newChars[currentChar]; const first=Object.keys(newChars)[0]||null; setCurrentChar(first); setSkills(first?newChars[first].skills:[]); saveChars(newChars);}
+  function newCharacter(){ const name=prompt("Neuer Charaktername:"); if(!name)return; if(characters[name]){alert("Name existiert bereits!"); return;} const attrs={}; ATTRS.forEach(a=>attrs[a]=12); const newChars={...characters,[name]:{attributes:attrs,skills:Object.values(defaultSkills).flat()}}; setCurrentChar(name); setSkills(newChars[name].skills); saveChars(newChars); }
+  function deleteCharacter(){ if(!currentChar)return; if(!confirm(`Charakter "${currentChar}" löschen?`))return; const newChars={...characters}; delete newChars[currentChar]; const first=Object.keys(newChars)[0]||null; setCurrentChar(first); setSkills(first?newChars[first].skills:[]); saveChars(newChars);}
   function updateAttr(attr,value){ const updated={...characters,[currentChar]:{...characters[currentChar],attributes:{...characters[currentChar].attributes,[attr]:parseInt(value)||0}}}; saveChars(updated);}
-  function addSkill(){ 
-    const name=prompt("Talentname:"); if(!name)return; 
-    const attrStr=prompt("Attribute (z.B. MU,KL,IN)"); if(!attrStr)return; 
-    const attrs=attrStr.split(",").map(a=>a.trim()); 
-    const taw=parseInt(prompt("TaW:")||"0",10); 
-    const spec=prompt("Spezialisierung (optional)"); 
-    const category=prompt("Kategorie (z.B. Kampf, Magie, Allgemein)","Allgemein"); 
-    const newSkill={name,attr:attrs,value:taw,spec,category:category||"Allgemein"}; 
-    const newSkills=[...skills,newSkill]; 
-    setSkills(newSkills); 
-    const updated={...characters,[currentChar]:{...characters[currentChar],skills:newSkills}}; saveChars(updated);
-  }
-  function clearSkills(){ if(!confirm("Alle Talente löschen?"))return; setSkills([]); const updated={...characters,[currentChar]:{...characters[currentChar],skills:[]}}; saveChars(updated);}
-  function rollD20(){return Math.floor(Math.random()*20)+1;}
-  function qualityLevel(tap){if(tap<1)return 0;if(tap<=3)return 1;if(tap<=6)return 2;if(tap<=9)return 3;if(tap<=12)return 4;if(tap<=15)return 5;return 6;}
+  
+  function rollD20(){ return Math.floor(Math.random()*20)+1; }
+  function qualityLevel(tap){ if(tap<1)return 0; if(tap<=3)return 1; if(tap<=6)return 2; if(tap<=9)return 3; if(tap<=12)return 4; if(tap<=15)return 5; return 6; }
   function addToLog(entry){ setLog(prev=>[entry,...prev]); }
 
-  function processRoll(skill,useSpec,rolls,attrs){
+  function processRoll(skill,useSpec,rolls){
+    const attrs = characters[currentChar]?.attributes || {};
     const ones=rolls.filter(r=>r===1).length;
     const twenties=rolls.filter(r=>r===20).length;
-    if(ones>=2){ addToLog({skill:skill.name,rolls,result:"✅ Kritischer Erfolg",tap:skill.value,qs:qualityLevel(skill.value)}); return; }
-    if(twenties>=2){ addToLog({skill:skill.name,rolls,result:"❌ Kritischer Patzer"}); return; }
-    let taw=skill.value+(useSpec&&skill.spec?2:0); let success=true;
-    skill.attr.forEach((a,i)=>{ const roll=rolls[i]; const attrVal=attrs[a]||0; const diff=roll-attrVal; if(diff>0){taw-=diff;if(taw<0)success=false;} });
-    let tap=success?taw:-1; let qs=success?qualityLevel(tap):0;
-    addToLog({skill:skill.name+(useSpec&&skill.spec?" (Spez)":"")+" ["+skill.category+"]",rolls,result:success?`✅ Erfolg (TaP*: ${tap}, QS: ${qs})`:"❌ Misslungen"});
+    if(ones>=2){ addToLog({skill:skill.name,rolls,result:"✅ Kritischer Erfolg",details:rolls.map((r,i)=>`${skill.attr[i]||'??'}: ${r} vs ${attrs[skill.attr[i]]||'??'} ✔`) }); return; }
+    if(twenties>=2){ addToLog({skill:skill.name,rolls,result:"❌ Kritischer Patzer",details:rolls.map((r,i)=>`${skill.attr[i]||'??'}: ${r} vs ${attrs[skill.attr[i]]||'??'} ✘`) }); return; }
+    let taw = skill.value + (useSpec && skill.spec?2:0);
+    let success = true;
+    const rollDetails=[];
+    skill.attr.forEach((a,i)=>{
+      const roll = rolls[i]!==undefined ? rolls[i] : rolls[0];
+      const val = attrs[a]||0;
+      const diff = roll - val;
+      if(diff>0) taw-=diff;
+      if(taw<0) success=false;
+      rollDetails.push(`${a}: geworfen ${roll} vs benötigt ${val} → ${diff<=0?"✔":"✘"}`);
+    });
+    let tap = success?taw:-1;
+    let qs = success?qualityLevel(tap):0;
+    addToLog({skill:skill.name+(useSpec&&skill.spec?" (Spez)":"")+" ["+skill.category+"]",rolls,result:success?`✅ Erfolg (TaP*: ${tap}, QS: ${qs})`:"❌ Misslungen",details:rollDetails});
   }
 
   function rollSkill(skill,useSpec){
-    const attrs=characters[currentChar].attributes;
-    if(manualMode){ setManualSkill(skill); setManualUseSpec(useSpec); setManualRolls(["","",""]); setManualModalVisible(true);}
-    else{
-      const rolls=skill.attr.map(()=>rollD20());
-      setDiceResults(rolls.slice());
-      processRoll(skill,useSpec,rolls,attrs);
-    }
+    const numDice = singleRollCategories.includes(skill.category)?1:skill.attr.length;
+    const rolls = Array.from({length:numDice},()=>rollD20());
+    setDiceResults(rolls.slice());
+    processRoll(skill,useSpec,rolls);
   }
 
   function exportAll(){ const blob=new Blob([JSON.stringify(characters,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="dsa_characters.json"; a.click(); URL.revokeObjectURL(url);}
-  function importJSON(e){ const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=ev=>{ try{ const data=JSON.parse(ev.target.result); if(data.name&&data.attributes){ const newChars={...characters,[data.name]:{attributes:data.attributes,skills:data.skills||[]}}; setCurrentChar(data.name); setSkills(data.skills||[]); saveChars(newChars);} else {setCharacters(data); const first=Object.keys(data)[0]; setCurrentChar(first); setSkills(first?data[first].skills:[]); saveChars(data);} alert("Import erfolgreich!"); }catch(err){alert("Fehler: Ungültige JSON-Datei");}}; reader.readAsText(file);}
-  function confirmManualRoll(){ const rolls=manualRolls.map(r=>parseInt(r,10)); if(rolls.some(x=>isNaN(x))){alert("Bitte gültige Zahlen eingeben!");return;} setDiceResults(rolls.slice()); processRoll(manualSkill,manualUseSpec,rolls,characters[currentChar].attributes); setManualModalVisible(false); }
+  function importJSON(e){ const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=ev=>{ try{ const data=JSON.parse(ev.target.result); setCharacters(data); const first=Object.keys(data)[0]; setCurrentChar(first); setSkills(first?data[first].skills:[]); saveChars(data); alert("Import erfolgreich!"); }catch(err){alert("Ungültige JSON");}}; reader.readAsText(file);}
 
-  if(!currentChar){ return <div><button onClick={newCharacter}>Neuer Charakter</button></div>; }
+  if(!currentChar) return <div><button onClick={newCharacter}>Neuer Charakter</button></div>;
 
   const groupedSkills = {};
-  skills.forEach(skill => {
-    const cat = skill.category || "Allgemein";
-    if(!groupedSkills[cat]) groupedSkills[cat] = [];
-    groupedSkills[cat].push(skill);
-  });
+  skills.forEach(skill => { const cat = skill.category || "Allgemein"; if(!groupedSkills[cat]) groupedSkills[cat]=[]; groupedSkills[cat].push(skill); });
 
   return (
     <div>
@@ -106,81 +105,65 @@ function App(){
         <button onClick={deleteCharacter}>Löschen</button>
       </div>
 
-      <h3>Eigenschaften</h3>
-      {ATTRS.map(a=>(
-        <div key={a}>{a}: <input type="number" value={characters[currentChar].attributes[a]||0} onChange={e=>updateAttr(a,e.target.value)} style={{width:60}} /></div>
-      ))}
-
-      <h3>Talente</h3>
-      {Object.entries(groupedSkills).map(([category, catSkills]) => (
-        <div key={category}>
-          <h4>{category}</h4>
-          <ul>
-            {catSkills.map((skill, idx) => (
-              <li key={idx}>
-                <strong>{skill.name}</strong> [{skill.attr.join("/")}] TaW {skill.value} {skill.spec?( `(Spez: ${skill.spec})`):""}
-                <div style={{marginTop:4}}>
-                  <button onClick={()=>rollSkill(skill,false)}>Würfeln</button>
-                  {skill.spec && <button onClick={()=>rollSkill(skill,true)}>Würfeln (Spez)</button>}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-      <div className="controls">
-        <button onClick={addSkill}>+ Talent hinzufügen</button>
-        <button onClick={clearSkills}>Talente löschen</button>
+      <div className="tabs">
+        <div className={"tab "+(activeTab==="Eigenschaften"?"active":"")} onClick={()=>setActiveTab("Eigenschaften")}>Eigenschaften</div>
+        <div className={"tab "+(activeTab==="Talente"?"active":"")} onClick={()=>setActiveTab("Talente")}>Talente</div>
+        <div className={"tab "+(activeTab==="Würfellog"?"active":"")} onClick={()=>setActiveTab("Würfellog")}>Würfellog</div>
       </div>
 
-      <h3>Würfelmodus</h3>
-      <button onClick={()=>setManualMode(!manualMode)}>
-        {manualMode?"🎲 Manueller Modus (aktiv)":"🎲 Automatischer Modus (aktiv)"}
-      </button>
+      {activeTab==="Eigenschaften" && (
+        <div>
+          {ATTRS.map(a=>(<div key={a}>{a}: <input type="number" value={characters[currentChar].attributes[a]||0} onChange={e=>updateAttr(a,e.target.value)} style={{width:60}} /></div>))}
+        </div>
+      )}
+
+      {activeTab==="Talente" && (
+        <div>
+          {Object.entries(groupedSkills).map(([category,catSkills])=>(
+            <div key={category}>
+              <h4>{category}</h4>
+              <ul>
+                {catSkills.map((skill,idx)=>(
+                  <li key={idx}>
+                    <strong>{skill.name}</strong> [{skill.attr.join("/")}] TaW {skill.value} {skill.spec?`(Spez: ${skill.spec})`:''}
+                    <div style={{marginTop:4}}>
+                      <button onClick={()=>rollSkill(skill,false)}>Würfeln</button>
+                      {skill.spec && <button onClick={()=>rollSkill(skill,true)}>Würfeln (Spez)</button>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <h4>Letzter Würfelwurf:</h4>
+          <div className="dice-row">
+            {diceResults.map((d,i)=><div key={i} className="dice-wrapper">{d}</div>)}
+            {diceResults.length===0 && <div>Keine Würfe bisher</div>}
+          </div>
+        </div>
+      )}
+
+      {activeTab==="Würfellog" && (
+        <div className="log">
+          {log.length===0 && <div>Noch keine Würfe</div>}
+          {log.map((entry,idx)=>(
+            <div key={idx} className="log-entry">
+              <strong>{entry.skill}</strong> – Würfe: {entry.rolls.join(", ")}<br/>
+              Ergebnis: {entry.result}<br/>
+              {entry.details && entry.details.map((d,i)=><div key={i} style={{fontSize:"0.9em", marginLeft:"10px"}}>{d}</div>)}
+            </div>
+          ))}
+        </div>
+      )}
 
       <h3>Import / Export</h3>
       <button onClick={exportAll}>Exportieren</button>
       <input type="file" accept="application/json" onChange={importJSON} />
-
-      <h3>Letzte Würfel</h3>
-      <div className="dice-row">
-        {diceResults.length===0 && <div>Keine Würfe bisher</div>}
-        {diceResults.map((v,i)=>(
-          <div key={i} className="dice-wrapper">{v}</div>
-        ))}
-      </div>
-
-      <h3>Würfellog</h3>
-      <div className="log">
-        {log.length===0 && <div>Noch keine Würfe</div>}
-        {log.map((entry,idx)=>(
-          <div key={idx} className="log-entry">
-            <strong>{entry.skill}</strong> – Würfe: {entry.rolls.join(", ")}<br/>
-            Ergebnis: {entry.result}
-          </div>
-        ))}
-      </div>
-
-      {manualModalVisible && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Würfelwerte für {manualSkill?.name}</h3>
-            {manualSkill?.attr.map((a,idx)=>(
-              <div key={idx}>{a}: <input type="number" value={manualRolls[idx]} onChange={e=>{ const nr=[...manualRolls]; nr[idx]=e.target.value; setManualRolls(nr); }} /></div>
-            ))}
-            <div style={{marginTop:8, display:"flex", justifyContent:"space-between"}}>
-              <button onClick={()=>setManualModalVisible(false)}>Abbrechen</button>
-              <button onClick={confirmManualRoll}>OK</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
 </script>
 </body>
 </html>

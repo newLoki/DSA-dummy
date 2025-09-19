@@ -6,7 +6,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel src --out-dir dist --extensions .js,.jsx --source-maps inline",
     "clean": "rm -rf dist",
-    "start": "open index.htm"
+    "start": "open index.htm",
+    "watch": "babel src --out-dir dist --extensions .js,.jsx --source-maps inline --watch",
+    "serve": "http-server -p 5173 -c-1 .",
+    "dev": "concurrently \"npm:watch\" \"npm:serve\""
   },
   "keywords": [],
   "author": "",
@@ -17,6 +20,8 @@
     "@babel/cli": "^7.28.3",
     "@babel/core": "^7.28.4",
     "@babel/preset-env": "^7.28.3",
-    "@babel/preset-react": "^7.27.1"
+    "@babel/preset-react": "^7.27.1",
+    "concurrently": "^9.1.0",
+    "http-server": "^14.1.1"
   }
 }

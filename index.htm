@@ -144,7 +144,6 @@ function App(){
 
   const groupedSkills = {};
   skills.forEach(skill => { const cat = skill.category || "Allgemein"; if(!groupedSkills[cat]) groupedSkills[cat]=[]; groupedSkills[cat].push(skill); });
-
   const skillCategories = ["Alle", ...Object.keys(groupedSkills)];
   const displayedSkills = filterCategory==="Alle" ? skills : groupedSkills[filterCategory] || [];
 
@@ -187,7 +186,17 @@ function App(){
 
           {displayedSkills.map((skill,idx)=>(
             <div key={idx} style={{marginTop:"8px"}}>
-              <strong>{skill.name}</strong> [{skill.attr.join("/")}] TaW {skill.value} {skill.spec?`(Spez: ${skill.spec})`:''} [{skill.category}]
+              <strong>{skill.name}</strong> [{skill.attr.join("/")}] 
+              TaW: <input type="number" value={skill.value} style={{width:50}}
+                onChange={e=>{
+                  const newSkills = [...skills];
+                  newSkills[skills.indexOf(skill)].value = parseInt(e.target.value) || 0;
+                  setSkills(newSkills);
+                  const updatedChars = {...characters};
+                  updatedChars[currentChar].skills = newSkills;
+                  localStorage.setItem("dsa_characters", JSON.stringify(updatedChars));
+                }} />
+              {skill.spec?`(Spez: ${skill.spec})`:''} [{skill.category}]
               <div style={{marginTop:4}}>
                 <button onClick={()=>rollSkill(skill,false)}>Würfeln</button>
                 {skill.spec && <button onClick={()=>rollSkill(skill,true)}>Würfeln (Spez)</button>}

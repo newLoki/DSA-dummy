@@ -29,68 +29,72 @@ h4 { margin-bottom:4px; margin-top:12px; }
 const { useState, useEffect } = React;
 const ATTRS = ["MU","KL","IN","CH","FF","GE","KO","KK"];
 const singleRollCategories = ["Kampftalente","Sprachen und Schriften","Liturgiekenntnis"];
-const defaultSkills = {
-  "Kampftalente":[
-    {name:"Schwertkampf", attr:["GE","KK","FF"], value:10, spec:"Einhand", category:"Kampftalente"},
-    {name:"Axtkampf", attr:["GE","KK","FF"], value:10, spec:"Zweihand", category:"Kampftalente"}
-  ],
-  "Körperliche Talente":[
-    {name:"Klettern", attr:["KK","GE","KO"], value:10, spec:"", category:"Körperliche Talente"},
-    {name:"Schwimmen", attr:["GE","KO","FF"], value:10, spec:"", category:"Körperliche Talente"}
-  ],
-  "Gesellschaftliche Talente":[
-    {name:"Überreden", attr:["CH","IN","FF"], value:12, spec:"", category:"Gesellschaftliche Talente"},
-    {name:"Etikette", attr:["CH","IN","MU"], value:10, spec:"", category:"Gesellschaftliche Talente"}
-  ],
-  "Natur-Talente":[
-    {name:"Orientierung", attr:["IN","GE","FF"], value:10, spec:"", category:"Natur-Talente"},
-    {name:"Tiere beobachten", attr:["IN","GE","FF"], value:10, spec:"", category:"Natur-Talente"}
-  ],
-  "Wissenstalente":[
-    {name:"Geschichtswissen", attr:["KL","IN","FF"], value:10, spec:"", category:"Wissenstalente"},
-    {name:"Arkanes Wissen", attr:["KL","IN","MU"], value:10, spec:"", category:"Wissenstalente"}
-  ],
-  "Sprachen und Schriften":[
-    {name:"Götter/Kulte", attr:["KL"], value:10, spec:"", category:"Sprachen und Schriften"},
-    {name:"Latein", attr:["KL"], value:10, spec:"", category:"Sprachen und Schriften"}
-  ],
-  "Handwerkstalente":[
-    {name:"Schneidern", attr:["GE","IN","FF"], value:10, spec:"", category:"Handwerkstalente"},
-    {name:"Schmieden", attr:["KK","GE","FF"], value:10, spec:"", category:"Handwerkstalente"}
-  ]
-};
 
-function App(){
-  const [characters,setCharacters]=useState({});
-  const [currentChar,setCurrentChar]=useState(null);
-  const [skills,setSkills]=useState([]);
-  const [log,setLog]=useState([]);
-  const [diceResults,setDiceResults]=useState([]);
-  const [activeTab,setActiveTab]=useState("Eigenschaften");
-  const [filterCategory,setFilterCategory]=useState("Alle");
+function App() {
+  const [characters, setCharacters] = useState({});
+  const [currentChar, setCurrentChar] = useState(null);
+  const [skills, setSkills] = useState([]);
+  const [log, setLog] = useState([]);
+  const [diceResults, setDiceResults] = useState([]);
+  const [activeTab, setActiveTab] = useState("Eigenschaften");
+  const [filterCategory, setFilterCategory] = useState("Alle");
 
   useEffect(()=>{
-    const saved=localStorage.getItem("dsa_characters");
-    if(saved){ const parsed=JSON.parse(saved); setCharacters(parsed); const first=Object.keys(parsed)[0]; if(first){ setCurrentChar(first); setSkills(parsed[first].skills||[]); } } 
-    else setSkills(Object.values(defaultSkills).flat());
+    fetch("talent.json")
+      .then(res => res.json())
+      .then(data => {
+        const allSkills = Object.values(data).flat();
+        const saved = localStorage.getItem("dsa_characters");
+        if(saved){
+          const parsed = JSON.parse(saved);
+          setCharacters(parsed);
+          const first = Object.keys(parsed)[0];
+          if(first){
+            setCurrentChar(first);
+            setSkills(parsed[first].skills || allSkills);
+          }
+        } else {
+          setSkills(allSkills);
+        }
+      })
+      .catch(err => console.error("Fehler beim Laden von talents.json:", err));
   },[]);
 
   function saveChars(newChars){ setCharacters(newChars); localStorage.setItem("dsa_characters",JSON.stringify(newChars)); }
-  function newCharacter(){ const name=prompt("Neuer Charaktername:"); if(!name)return; if(characters[name]){alert("Name existiert bereits!"); return;} const attrs={}; ATTRS.forEach(a=>attrs[a]=12); const newChars={...characters,[name]:{attributes:attrs,skills:Object.values(defaultSkills).flat()}}; setCurrentChar(name); setSkills(newChars[name].skills); saveChars(newChars); }
-  function deleteCharacter(){ if(!currentChar)return; if(!confirm(`Charakter "${currentChar}" löschen?`))return; const newChars={...characters}; delete newChars[currentChar]; const first=Object.keys(newChars)[0]||null; setCurrentChar(first); setSkills(first?newChars[first].skills:[]); saveChars(newChars);}
-  function updateAttr(attr,value){ const updated={...characters,[currentChar]:{...characters[currentChar],attributes:{...characters[currentChar].attributes,[attr]:parseInt(value)||0}}}; saveChars(updated);}
-  
+  function newCharacter(){
+    const name = prompt("Neuer Charaktername:");
+    if(!name) return;
+    const attrs = {};
+    ATTRS.forEach(a=>attrs[a]=12);
+    const newChars = {...characters,[name]:{attributes:attrs, skills:skills}};
+    setCurrentChar(name);
+    setCharacters(newChars);
+    saveChars(newChars);
+  }
+  function deleteCharacter(){
+    if(!currentChar) return;
+    if(!confirm(`Charakter "${currentChar}" löschen?`)) return;
+    const newChars = {...characters};
+    delete newChars[currentChar];
+    const first = Object.keys(newChars)[0] || null;
+    setCurrentChar(first);
+    setSkills(first?newChars[first].skills:[]);
+    saveChars(newChars);
+  }
+  function updateAttr(attr,value){
+    const updated = {...characters,[currentChar]:{...characters[currentChar],attributes:{...characters[currentChar].attributes,[attr]:parseInt(value)||0}}};
+    saveChars(updated);
+  }
+
   function rollD20(){ return Math.floor(Math.random()*20)+1; }
   function qualityLevel(tap){ if(tap<1)return 0; if(tap<=3)return 1; if(tap<=6)return 2; if(tap<=9)return 3; if(tap<=12)return 4; if(tap<=15)return 5; return 6; }
   function addToLog(entry){ setLog(prev=>[entry,...prev]); }
 
   function processRoll(skill,useSpec,rolls){
     const attrs = characters[currentChar]?.attributes || {};
-    const ones=rolls.filter(r=>r===1).length;
-    const twenties=rolls.filter(r=>r===20).length;
-
-    let isCritical=false;
-    let criticalText="";
+    const ones = rolls.filter(r=>r===1).length;
+    const twenties = rolls.filter(r=>r===20).length;
+    let isCritical=false, criticalText="";
     if(ones>=2){ isCritical=true; criticalText="✅ Kritischer Erfolg"; }
     if(twenties>=2){ isCritical=true; criticalText="❌ Kritischer Patzer"; }
 
@@ -111,7 +115,7 @@ function App(){
     addToLog({
       skill: skill.name+(useSpec&&skill.spec?" (Spez)":"")+" ["+skill.category+"]",
       rolls: rolls,
-      result: isCritical?criticalText:(success?`✅ Erfolg (TaP*: ${tap}, QS: ${qs})`:`❌ Misslungen (TaP*: ${tap})`),
+      result: isCritical?criticalText:(success?`✅ Erfolg (TaP: ${tap}, QS: ${qs})`:`❌ Misslungen (TaP: ${tap})`),
       details: rollDetails
     });
   }
@@ -137,8 +141,33 @@ function App(){
     });
   }
 
-  function exportAll(){ const blob=new Blob([JSON.stringify(characters,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="dsa_characters.json"; a.click(); URL.revokeObjectURL(url);}
-  function importJSON(e){ const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=ev=>{ try{ const data=JSON.parse(ev.target.result); setCharacters(data); const first=Object.keys(data)[0]; setCurrentChar(first); setSkills(first?data[first].skills:[]); saveChars(data); alert("Import erfolgreich!"); }catch(err){alert("Ungültige JSON");}}; reader.readAsText(file);}
+  function exportAll(){
+    const blob = new Blob([JSON.stringify(characters,null,2)],{type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download="dsa_characters.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function importJSON(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try{
+        const data = JSON.parse(ev.target.result);
+        setCharacters(data);
+        const first = Object.keys(data)[0];
+        setCurrentChar(first);
+        setSkills(first?data[first].skills:[]);
+        saveChars(data);
+        alert("Import erfolgreich!");
+      } catch(err){ alert("Ungültige JSON"); }
+    };
+    reader.readAsText(file);
+  }
 
   if(!currentChar) return <div><button onClick={newCharacter}>Neuer Charakter</button></div>;
 

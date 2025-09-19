@@ -1,0 +1,65 @@
+{
+  "Kampftalente": [
+    {"name": "Armbrust", "attr": ["GE", "KK", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Bogen", "attr": ["GE", "KK", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Dolche", "attr": ["GE", "KK", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Fechtwaffen", "attr": ["GE", "KK", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Hiebwaffen", "attr": ["KK", "GE", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Kettenwaffen", "attr": ["KK", "GE", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Peitsche", "attr": ["GE", "KK", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Raufen", "attr": ["KO", "GE", "KK"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Ringen", "attr": ["KO", "GE", "KK"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Schwerter", "attr": ["KK", "GE", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Säbel", "attr": ["KK", "GE", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Speere", "attr": ["KK", "GE", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Stäbe", "attr": ["KK", "GE", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Zweihand-Hiebwaffen", "attr": ["KK", "GE", "FF"], "value": 12, "spec": "", "category": "Kampftalente"},
+    {"name": "Zweihandschwerter/-säbel", "attr": ["KK", "GE", "FF"], "value": 12, "spec": "", "category": "Kampftalente"}
+  ],
+  "Körperliche Talente": [
+    {"name": "Akrobatik", "attr": ["GE", "KO", "KK"], "value": 12, "spec": "", "category": "Körperliche Talente"},
+    {"name": "Athletik", "attr": ["GE", "KO", "KK"], "value": 12, "spec": "", "category": "Körperliche Talente"},
+    {"name": "Klettern", "attr": ["KK", "GE", "KO"], "value": 12, "spec": "", "category": "Körperliche Talente"},
+    {"name": "Körperbeherrschung", "attr": ["MU", "IN", "GE"], "value": 12, "spec": "", "category": "Körperliche Talente"},
+    {"name": "Schleichen", "attr": ["MU", "IN", "GE"], "value": 12, "spec": "", "category": "Körperliche Talente"},
+    {"name": "Schwimmen", "attr": ["GE", "KO", "KK"], "value": 12, "spec": "", "category": "Körperliche Talente"},
+    {"name": "Selbstbeherrschung", "attr": ["MU", "IN", "GE"], "value": 12, "spec": "", "category": "Körperliche Talente"},
+    {"name": "Sinnesschärfe", "attr": ["GE", "KO", "KK"], "value": 12, "spec": "", "category": "Körperliche Talente"},
+    {"name": "Singen", "attr": ["GE", "KO", "KK"], "value": 12, "spec": "", "category": "Körperliche Talente"},
+    {"name": "Tanzen", "attr": ["GE", "KO", "KK"], "value": 12, "spec": "", "category": "Körperliche Talente"},
+    {"name": "Zechen", "attr": ["KO", "GE", "KK"], "value": 12, "spec": "", "category": "Körperliche Talente"}
+  ],
+  "Gesellschaftliche Talente": [
+    {"name": "Betören", "attr": ["CH", "IN", "FF"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Etikette", "attr": ["CH", "IN", "MU"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Gassenwissen", "attr": ["CH", "IN", "MU"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Götter/Kulte", "attr": ["KL"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Heraldik", "attr": ["KL"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Humor", "attr": ["CH", "IN", "FF"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Kommando", "attr": ["CH", "IN", "FF"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Lehren", "attr": ["CH", "IN", "MU"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Menschenkenntnis", "attr": ["CH", "IN", "MU"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Rechtskunde", "attr": ["KL"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Schriftlicher Ausdruck", "attr": ["CH", "IN", "MU"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Schauspielerei", "attr": ["CH", "IN", "FF"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Sich Verkleiden", "attr": ["CH", "IN", "FF"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"},
+    {"name": "Überreden", "attr": ["CH", "IN", "FF"], "value": 12, "spec": "", "category": "Gesellschaftliche Talente"}
+  ],
+  "Natur-Talente": [
+    {"name": "Abrichten", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"},
+    {"name": "Fährtenlesen", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"},
+    {"name": "Fesseln/Entfesseln", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"},
+    {"name": "Fallenstellen", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"},
+    {"name": "Fliegen", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"},
+    {"name": "Orientierung", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"},
+    {"name": "Reiten", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"},
+    {"name": "Schwimmen", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"},
+    {"name": "Sinnenschärfe", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"},
+    {"name": "Tiere beobachten", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"},
+    {"name": "Wildnisleben", "attr": ["IN", "GE", "FF"], "value": 12, "spec": "", "category": "Natur-Talente"}
+  ],
+  "Wissenstalente": [
+    {"name": "Anatomie", "attr": ["KL"], "value": 12, "spec": "", "category": "Wissenstalente"},
+    {"name": "Astronomie", "attr": ["KL"], "value": 12, "spec": "", "category": "Wissenstalente"}
+  ]
+}

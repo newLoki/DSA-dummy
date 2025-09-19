@@ -8,7 +8,7 @@
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
 body { font-family:sans-serif; margin:20px; }
-input, button { margin:6px; }
+input, button, select { margin:6px; }
 .tabs { display:flex; margin-bottom:12px; }
 .tab { padding:6px 12px; margin-right:6px; border:1px solid #ccc; border-radius:4px; cursor:pointer; }
 .tab.active { background:#eee; font-weight:bold; }
@@ -18,6 +18,8 @@ input, button { margin:6px; }
 h4 { margin-bottom:4px; margin-top:12px; }
 .dice-row { display:flex; gap:8px; margin-top:8px; }
 .dice-wrapper { width:36px; height:36px; display:flex; align-items:center; justify-content:center; border:1px solid #ccc; border-radius:6px; background:#f6f6f6; font-weight:bold; }
+.success { color:green; font-weight:bold; }
+.failure { color:red; font-weight:bold; }
 </style>
 </head>
 <body>
@@ -28,13 +30,34 @@ const { useState, useEffect } = React;
 const ATTRS = ["MU","KL","IN","CH","FF","GE","KO","KK"];
 const singleRollCategories = ["Kampftalente","Sprachen und Schriften","Liturgiekenntnis"];
 const defaultSkills = {
-  "Kampftalente":[{name:"Schwerter",attr:["GE","KK"],value:10,spec:"Einhand",category:"Kampftalente"}],
-  "Körperliche Talente":[{name:"Klettern",attr:["KK","GE"],value:10,spec:"",category:"Körperliche Talente"}],
-  "Gesellschaftliche Talente":[{name:"Überreden",attr:["CH","IN"],value:12,spec:"",category:"Gesellschaftliche Talente"}],
-  "Natur-Talente":[{name:"Orientierung",attr:["IN","FF"],value:10,spec:"",category:"Natur-Talente"}],
-  "Wissenstalente":[{name:"Geschichtswissen",attr:["IN"],value:10,spec:"",category:"Wissenstalente"}],
-  "Sprachen und Schriften":[{name:"Götter/Kulte",attr:["KL"],value:10,spec:"",category:"Sprachen und Schriften"}],
-  "Handwerkstalente":[{name:"Schneidern",attr:["GE"],value:10,spec:"",category:"Handwerkstalente"}]
+  "Kampftalente":[
+    {name:"Schwertkampf", attr:["GE","KK","FF"], value:10, spec:"Einhand", category:"Kampftalente"},
+    {name:"Axtkampf", attr:["GE","KK","FF"], value:10, spec:"Zweihand", category:"Kampftalente"}
+  ],
+  "Körperliche Talente":[
+    {name:"Klettern", attr:["KK","GE","KO"], value:10, spec:"", category:"Körperliche Talente"},
+    {name:"Schwimmen", attr:["GE","KO","FF"], value:10, spec:"", category:"Körperliche Talente"}
+  ],
+  "Gesellschaftliche Talente":[
+    {name:"Überreden", attr:["CH","IN","FF"], value:12, spec:"", category:"Gesellschaftliche Talente"},
+    {name:"Etikette", attr:["CH","IN","MU"], value:10, spec:"", category:"Gesellschaftliche Talente"}
+  ],
+  "Natur-Talente":[
+    {name:"Orientierung", attr:["IN","GE","FF"], value:10, spec:"", category:"Natur-Talente"},
+    {name:"Tiere beobachten", attr:["IN","GE","FF"], value:10, spec:"", category:"Natur-Talente"}
+  ],
+  "Wissenstalente":[
+    {name:"Geschichtswissen", attr:["KL","IN","FF"], value:10, spec:"", category:"Wissenstalente"},
+    {name:"Arkanes Wissen", attr:["KL","IN","MU"], value:10, spec:"", category:"Wissenstalente"}
+  ],
+  "Sprachen und Schriften":[
+    {name:"Götter/Kulte", attr:["KL"], value:10, spec:"", category:"Sprachen und Schriften"},
+    {name:"Latein", attr:["KL"], value:10, spec:"", category:"Sprachen und Schriften"}
+  ],
+  "Handwerkstalente":[
+    {name:"Schneidern", attr:["GE","IN","FF"], value:10, spec:"", category:"Handwerkstalente"},
+    {name:"Schmieden", attr:["KK","GE","FF"], value:10, spec:"", category:"Handwerkstalente"}
+  ]
 };
 
 function App(){
@@ -44,6 +67,7 @@ function App(){
   const [log,setLog]=useState([]);
   const [diceResults,setDiceResults]=useState([]);
   const [activeTab,setActiveTab]=useState("Eigenschaften");
+  const [filterCategory,setFilterCategory]=useState("Alle");
 
   useEffect(()=>{
     const saved=localStorage.getItem("dsa_characters");
@@ -64,10 +88,14 @@ function App(){
     const attrs = characters[currentChar]?.attributes || {};
     const ones=rolls.filter(r=>r===1).length;
     const twenties=rolls.filter(r=>r===20).length;
-    if(ones>=2){ addToLog({skill:skill.name,rolls,result:"✅ Kritischer Erfolg",details:rolls.map((r,i)=>`${skill.attr[i]||'??'}: ${r} vs ${attrs[skill.attr[i]]||'??'} ✔`) }); return; }
-    if(twenties>=2){ addToLog({skill:skill.name,rolls,result:"❌ Kritischer Patzer",details:rolls.map((r,i)=>`${skill.attr[i]||'??'}: ${r} vs ${attrs[skill.attr[i]]||'??'} ✘`) }); return; }
+
+    let isCritical=false;
+    let criticalText="";
+    if(ones>=2){ isCritical=true; criticalText="✅ Kritischer Erfolg"; }
+    if(twenties>=2){ isCritical=true; criticalText="❌ Kritischer Patzer"; }
+
     let taw = skill.value + (useSpec && skill.spec?2:0);
-    let success = true;
+    let success=true;
     const rollDetails=[];
     skill.attr.forEach((a,i)=>{
       const roll = rolls[i]!==undefined ? rolls[i] : rolls[0];
@@ -79,7 +107,13 @@ function App(){
     });
     let tap = success?taw:-1;
     let qs = success?qualityLevel(tap):0;
-    addToLog({skill:skill.name+(useSpec&&skill.spec?" (Spez)":"")+" ["+skill.category+"]",rolls,result:success?`✅ Erfolg (TaP*: ${tap}, QS: ${qs})`:"❌ Misslungen",details:rollDetails});
+
+    addToLog({
+      skill: skill.name+(useSpec&&skill.spec?" (Spez)":"")+" ["+skill.category+"]",
+      rolls: rolls,
+      result: isCritical?criticalText:(success?`✅ Erfolg (TaP*: ${tap}, QS: ${qs})`:`❌ Misslungen (TaP*: ${tap})`),
+      details: rollDetails
+    });
   }
 
   function rollSkill(skill,useSpec){
@@ -89,6 +123,20 @@ function App(){
     processRoll(skill,useSpec,rolls);
   }
 
+  function rollAttribute(attr){
+    const val = characters[currentChar]?.attributes[attr] || 0;
+    const roll = rollD20();
+    const success = roll <= val;
+    const critical = roll===1 ? "✅ Kritischer Erfolg" : roll===20 ? "❌ Kritischer Patzer" : null;
+    setDiceResults([roll]);
+    addToLog({
+      skill: `Eigenschaft: ${attr}`,
+      rolls: [roll],
+      result: critical || (success?`✅ Erfolg (≤ ${val})`:`❌ Misslungen (≤ ${val})`),
+      details: [`geworfen ${roll} vs benötigt ${val} → ${success?"✔":"✘"}`]
+    });
+  }
+
   function exportAll(){ const blob=new Blob([JSON.stringify(characters,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="dsa_characters.json"; a.click(); URL.revokeObjectURL(url);}
   function importJSON(e){ const file=e.target.files[0]; if(!file)return; const reader=new FileReader(); reader.onload=ev=>{ try{ const data=JSON.parse(ev.target.result); setCharacters(data); const first=Object.keys(data)[0]; setCurrentChar(first); setSkills(first?data[first].skills:[]); saveChars(data); alert("Import erfolgreich!"); }catch(err){alert("Ungültige JSON");}}; reader.readAsText(file);}
 
@@ -96,6 +144,9 @@ function App(){
 
   const groupedSkills = {};
   skills.forEach(skill => { const cat = skill.category || "Allgemein"; if(!groupedSkills[cat]) groupedSkills[cat]=[]; groupedSkills[cat].push(skill); });
+
+  const skillCategories = ["Alle", ...Object.keys(groupedSkills)];
+  const displayedSkills = filterCategory==="Alle" ? skills : groupedSkills[filterCategory] || [];
 
   return (
     <div>
@@ -113,28 +164,37 @@ function App(){
 
       {activeTab==="Eigenschaften" && (
         <div>
-          {ATTRS.map(a=>(<div key={a}>{a}: <input type="number" value={characters[currentChar].attributes[a]||0} onChange={e=>updateAttr(a,e.target.value)} style={{width:60}} /></div>))}
+          {ATTRS.map(a=>(
+            <div key={a}>
+              {a}: <input type="number" value={characters[currentChar].attributes[a]||0} onChange={e=>updateAttr(a,e.target.value)} style={{width:60}} />
+              <button onClick={()=>rollAttribute(a)}>Würfeln</button>
+            </div>
+          ))}
+          <h4>Letzter Würfelwurf:</h4>
+          <div className="dice-row">
+            {diceResults.map((d,i)=><div key={i} className="dice-wrapper">{d}</div>)}
+            {diceResults.length===0 && <div>Keine Würfe bisher</div>}
+          </div>
         </div>
       )}
 
       {activeTab==="Talente" && (
         <div>
-          {Object.entries(groupedSkills).map(([category,catSkills])=>(
-            <div key={category}>
-              <h4>{category}</h4>
-              <ul>
-                {catSkills.map((skill,idx)=>(
-                  <li key={idx}>
-                    <strong>{skill.name}</strong> [{skill.attr.join("/")}] TaW {skill.value} {skill.spec?`(Spez: ${skill.spec})`:''}
-                    <div style={{marginTop:4}}>
-                      <button onClick={()=>rollSkill(skill,false)}>Würfeln</button>
-                      {skill.spec && <button onClick={()=>rollSkill(skill,true)}>Würfeln (Spez)</button>}
-                    </div>
-                  </li>
-                ))}
-              </ul>
+          <label>Filter nach Kategorie: </label>
+          <select value={filterCategory} onChange={e=>setFilterCategory(e.target.value)}>
+            {skillCategories.map(cat=><option key={cat} value={cat}>{cat}</option>)}
+          </select>
+
+          {displayedSkills.map((skill,idx)=>(
+            <div key={idx} style={{marginTop:"8px"}}>
+              <strong>{skill.name}</strong> [{skill.attr.join("/")}] TaW {skill.value} {skill.spec?`(Spez: ${skill.spec})`:''} [{skill.category}]
+              <div style={{marginTop:4}}>
+                <button onClick={()=>rollSkill(skill,false)}>Würfeln</button>
+                {skill.spec && <button onClick={()=>rollSkill(skill,true)}>Würfeln (Spez)</button>}
+              </div>
             </div>
           ))}
+
           <h4>Letzter Würfelwurf:</h4>
           <div className="dice-row">
             {diceResults.map((d,i)=><div key={i} className="dice-wrapper">{d}</div>)}
@@ -149,7 +209,7 @@ function App(){
           {log.map((entry,idx)=>(
             <div key={idx} className="log-entry">
               <strong>{entry.skill}</strong> – Würfe: {entry.rolls.join(", ")}<br/>
-              Ergebnis: {entry.result}<br/>
+              Ergebnis: <span className={entry.result.includes("❌")?"failure":"success"}>{entry.result}</span><br/>
               {entry.details && entry.details.map((d,i)=><div key={i} style={{fontSize:"0.9em", marginLeft:"10px"}}>{d}</div>)}
             </div>
           ))}

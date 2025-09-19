@@ -1,10 +1,10 @@
 {
   "name": "dsa-dummy",
   "version": "1.0.0",
-  "main": "dice.js",
+  "main": "src/dice.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel . --out-dir dist --extensions .js,.jsx --ignore dist,node_modules --source-maps inline",
+    "build": "babel src --out-dir dist --extensions .js,.jsx --source-maps inline",
     "clean": "rm -rf dist",
     "start": "open index.htm"
   },

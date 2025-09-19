@@ -26,7 +26,7 @@ h4 { margin-bottom:4px; margin-top:12px; }
 
 <div id="root"></div>
 
-<script type="text/babel">
+<script type="application/javascript">
 
 import { rollD20, processSkillRoll, rollAttribute } from './dist/dice.js';
 import { exportCharacters, importCharacters } from './dist/storage.js';
@@ -50,7 +50,7 @@ function App() {
   const [newSkillAttr, setNewSkillAttr] = useState("");
 
   useEffect(()=>{
-    fetch("talent.json")
+    fetch("data/talent.json")
       .then(res => res.json())
       .then(data => {
         const allSkills = Object.values(data).flat();
